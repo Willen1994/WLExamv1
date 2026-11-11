@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BF & Phase Operations Flashcard Review</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-back-bg: #0f766e;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 650px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    /* Progress & Metrics */
+    .metrics {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background-color: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      transition: width 0.3s ease;
+    }
+
+    /* Deck Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background-color: var(--border);
+      color: var(--text-main);
+    }
+
+    /* Flashcard Container & 3D Flip */
+    .card-container {
+      width: 100%;
+      max-width: 650px;
+      height: 380px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+
+    .card-front {
+      background-color: var(--card-bg);
+    }
+
+    .card-back {
+      background-color: var(--card-back-bg);
+      transform: rotateY(180deg);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-sub);
+    }
+
+    .card-back .card-header {
+      color: #ccfbf1;
+    }
+
+    .card-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.5;
+      padding: 10px 0;
+    }
+
+    .card-back .card-body {
+      font-size: 1.2rem;
+      white-space: pre-line;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      text-align: center;
+      color: var(--text-sub);
+      font-style: italic;
+    }
+
+    .card-back .hint {
+      color: #ccfbf1;
+    }
+
+    /* Controls */
+    .controls {
+      width: 100%;
+      max-width: 650px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button.ctrl-btn {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button.ctrl-btn:hover {
+      background-color: var(--border);
+    }
+
+    button.review-btn {
+      border-color: var(--warning);
+      color: var(--warning);
+    }
+
+    button.master-btn {
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    button.review-btn:hover {
+      background-color: rgba(245, 158, 11, 0.15);
+    }
+
+    button.master-btn:hover {
+      background-color: rgba(34, 197, 94, 0.15);
+    }
+
+    /* Keyboard Shortcuts Footer */
+    .shortcuts {
+      margin-top: auto;
+      padding-top: 20px;
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      text-align: center;
+    }
+
+    kbd {
+      background-color: var(--border);
+      color: var(--text-main);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Operations Flashcards</h1>
+    <div class="metrics">
+      <span id="card-counter">Card 1 of 35</span>
+      <span id="mastered-counter">Mastered: 0</span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="filter-tabs">
+      <button class="tab-btn active" onclick="setFilter('all', this)">All Cards</button>
+      <button class="tab-btn" onclick="setFilter('needs-review', this)">Needs Review</button>
+      <button class="tab-btn" onclick="setFilter('mastered', this)">Mastered</button>
+    </div>
+  </header>
+
+  <main class="card-container" onclick="flipCard()">
+    <div class="card" id="flashcard">
+      <!-- Front -->
+      <div class="card-face card-front">
+        <div class="card-header">
+          <span>Question</span>
+          <span id="q-id">#1</span>
+        </div>
+        <div class="card-body" id="card-question">
+          Loading Question...
+        </div>
+        <div class="hint">Click or press Space to flip</div>
+      </div>
+      
+      <!-- Back -->
+      <div class="card-face card-back">
+        <div class="card-header">
+          <span>Answer</span>
+          <span id="a-id">#1</span>
+        </div>
+        <div class="card-body" id="card-answer">
+          Loading Answer...
+        </div>
+        <div class="hint">Click to flip back</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="controls">
+    <div class="btn-group">
+      <button class="ctrl-btn" onclick="prevCard()">← Prev</button>
+      <button class="ctrl-btn" onclick="nextCard()">Next →</button>
+    </div>
+    
+    <div class="btn-group">
+      <button class="ctrl-btn review-btn" onclick="markStatus(false)">Needs Review</button>
+      <button class="ctrl-btn master-btn" onclick="markStatus(true)">Mastered ✓</button>
+    </div>
+  </div>
+
+  <footer class="shortcuts">
+    Shortcuts: <kbd>Space</kbd> Flip | <kbd>←</kbd> Prev | <kbd>→</kbd> Next | <kbd>M</kbd> Master | <kbd>R</kbd> Review
+  </footer>
+
+  <script>
+    const dataset = [
+      { id: 1, q: "Temp. Setpoint of BF Lines?", a: "57 °C" },
+      { id: 2, q: "Level tank with 2 machines Running?", a: "0.67" },
+      { id: 3, q: "Capacity of Bridge crane on Diss. Incoming bay?", a: "10 tons" },
+      { id: 4, q: "Where does SPS & Solugol enters the system?", a: "before heat exchanger" },
+      { id: 5, q: "What Additives has the fastest effect on the system w/c around 30 mins?", a: "SPS" },
+      { id: 6, q: "Where the HEC Additives enters the system?", a: "Collection Tanks" },
+      { id: 7, q: "Where does the pressure gauge located on the peristaltic pump?", a: "in the outlet part" },
+      { id: 8, q: "What is the minimum circumference of brushes?", a: "940 mm" },
+      { id: 9, q: "Inside the company using forklift who has the priority even on pedestrian crossing?", a: "Forklift has always the priority" },
+      { id: 10, q: "Where do we put the Hydrochloric Acid (HCL) in the system?", a: "Collection Tank" },
+      { id: 11, q: "When do we clean the Ultrasonic Sensor on HeadTank, CollectionTank & Level Tank?", a: "Based on the schedule on the CheckSheet" },
+      { id: 12, q: "Where do we transfer the sludge during A05 Cleaning?", a: "• Sedimentation Pool\n• IBC" },
+      { id: 13, q: "When is the proper timing on changing filter on Sedimentation Pool?", a: "0.2 Difference" },
+      { id: 14, q: "Where does the water accidentally enters the system?", a: "• Level Tank\n• Scrubber Pocket on Top of Tanks" },
+      { id: 15, q: "Why do we keep the All Gates Always closed on the Incoming Bays?", a: "To avoid insects to come in" },
+      { id: 16, q: "Why it is important to closed all Lids of Tower Tank after Loading?", a: "• To avoid contamination.\n• To help the performance of Scrubbers." },
+      { id: 17, q: "What is the purpose of Blowers?", a: "To help dissolves the copper and control the copper concentration" },
+      { id: 18, q: "What do we check when Loading Wire Tank?", a: "pipping and Compensators" },
+      { id: 19, q: "When do we scrap Brushes?", a: "• When Below the limit circumference\n• Upon the Advice of Engineering Dept." },
+      { id: 20, q: "Where do we connects the crossflow?", a: "• Distributor x WIRETANK\n• Return Pipe" },
+      { id: 21, q: "What will be the effect on system if we do Small Cycle Flow of Electrolytes?", a: "The Redox Increases" },
+      { id: 22, q: "What is the proper sequence of MPR Scrap to be feed on Shredding machine?", a: "from smallest MPR to Big MPR" },
+      { id: 23, q: "Why it is important that the Pumps of Storage Tank on Phase 1 must always open?", a: "It helps the evaporator through the flow of electrolytes" },
+      { id: 24, q: "What are the checkpoints to observe when loading Additives on skid", a: "• The skid is not on mixing process\n• The Agitator is always on.\n• Avoid contamination" },
+      { id: 25, q: "ON PHASE 1: Where does the electrolyte return in the system after the filtration process on Sedimentation Pool during ACF cleaning?", a: "From Sedimentation using pipe connected to Storage Tanks" },
+      { id: 26, q: "ON PHASE 2: Where does the electrolyte return in the system after the filtration process on sedimentation Pool during ACF cleaning?", a: "From Sedimentation using pipe connected to any Line where the electrolytes need to transfer." },
+      { id: 27, q: "What types of Copper is NOT suitable for loading in WIRE TANK ON BF LINES?", a: "SODRONICS" },
+      { id: 28, q: "What types of Copper can filled the TOWER TANK DURING COPPER LOADING?", a: "• Metalex (compacted copper)\n• Shredded Copper" },
+      { id: 29, q: "What types of Copper is only allowed to be loaded in Tower Tanks for SR LINES?", a: "• SODRONICS\n• NON PASSIVATED SHREDDED COPPER\n• GRANULATED COPPER" },
+      { id: 30, q: "What Data are we record on Shift Report in regards to Rinsing Water?", a: "Conductivity of Rinsing water" },
+      { id: 31, q: "Which pump is responsible to regulate the circulation of electrolytes from Collection Tank going back to Tower/WIRE TANK", a: "Return Pumps" },
+      { id: 32, q: "Which is correct sequence on adding sugar on the Chrome Skid?", a: "The tank is in “Dilution”, the water has been added and the chrome is fully finished on transfer process" },
+      { id: 33, q: "What are the Basic components of Electrolytes?", a: "Water, Oxygen, Copper, SULFURIC ACID" },
+      { id: 34, q: "When MIXING ACIDS, WHAT IS THE PROPER SEQUENCE?", a: "WATER FIRST THEN ACID LAST" },
+      { id: 35, q: "What will be the effect on Dissolving side if the Rinsing Water Collection pump Stops?", a: "The Sumptank Level Increases" }
+    ];
+
+    let masteredCards = new Set();
+    let currentFilter = 'all';
+    let filteredIndices = [];
+    let currentIndex = 0;
+    let isFlipped = false;
+
+    function init() {
+      applyFilter();
+      updateCard();
+    }
+
+    function applyFilter() {
+      filteredIndices = [];
+      dataset.forEach((item, index) => {
+        const isMastered = masteredCards.has(item.id);
+        if (currentFilter === 'all') {
+          filteredIndices.push(index);
+        } else if (currentFilter === 'mastered' && isMastered) {
+          filteredIndices.push(index);
+        } else if (currentFilter === 'needs-review' && !isMastered) {
+          filteredIndices.push(index);
+        }
+      });
+
+      currentIndex = 0;
+    }
+
+    function updateCard() {
+      const cardEl = document.getElementById('flashcard');
+      cardEl.classList.remove('flipped');
+      isFlipped = false;
+
+      if (filteredIndices.length === 0) {
+        document.getElementById('card-question').innerText = "No cards available in this view.";
+        document.getElementById('card-answer').innerText = "No cards available.";
+        document.getElementById('card-counter').innerText = "0 of 0";
+        document.getElementById('q-id').innerText = "#0";
+        document.getElementById('a-id').innerText = "#0";
+        updateProgress();
+        return;
+      }
+
+      const item = dataset[filteredIndices[currentIndex]];
+      document.getElementById('card-question').innerText = item.q;
+      document.getElementById('card-answer').innerText = item.a;
+      document.getElementById('q-id').innerText = `#${item.id}`;
+      document.getElementById('a-id').innerText = `#${item.id}`;
+
+      document.getElementById('card-counter').innerText = `Card ${currentIndex + 1} of ${filteredIndices.length}`;
+      updateProgress();
+    }
+
+    function flipCard() {
+      if (filteredIndices.length === 0) return;
+      const cardEl = document.getElementById('flashcard');
+      cardEl.classList.toggle('flipped');
+      isFlipped = !isFlipped;
+    }
+
+    function nextCard() {
+      if (filteredIndices.length === 0) return;
+      currentIndex = (currentIndex + 1) % filteredIndices.length;
+      updateCard();
+    }
+
+    function prevCard() {
+      if (filteredIndices.length === 0) return;
+      currentIndex = (currentIndex - 1 + filteredIndices.length) % filteredIndices.length;
+      updateCard();
+    }
+
+    function markStatus(isMastered) {
+      if (filteredIndices.length === 0) return;
+      const currentId = dataset[filteredIndices[currentIndex]].id;
+      
+      if (isMastered) {
+        masteredCards.add(currentId);
+      } else {
+        masteredCards.delete(currentId);
+      }
+
+      document.getElementById('mastered-counter').innerText = `Mastered: ${masteredCards.size}`;
+
+      if (currentFilter !== 'all') {
+        applyFilter();
+        updateCard();
+      } else {
+        nextCard();
+      }
+    }
+
+    function updateProgress() {
+      const total = dataset.length;
+      const progressPercent = (masteredCards.size / total) * 100;
+      document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+    }
+
+    function setFilter(filterType, element) {
+      currentFilter = filterType;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      applyFilter();
+      updateCard();
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        flipCard();
+      } else if (e.code === 'ArrowRight') {
+        nextCard();
+      } else if (e.code === 'ArrowLeft') {
+        prevCard();
+      } else if (e.code === 'KeyM') {
+        markStatus(true);
+      } else if (e.code === 'KeyR') {
+        markStatus(false);
+      }
+    });
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
